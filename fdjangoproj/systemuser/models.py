@@ -8,7 +8,7 @@ now = timezone.now()
 
 def image_path(instance, filename):
     basefilename, file_extension= os.path.splitext(filename)
-    chars = 'JAWWAAAAAAAAA'
+    chars = 'abcdefghijklmnopqrstuvwxyz1234567890'
     randomstr = ''.join((random.choice)(chars) for x in range(10))
     _now = datetime.now()
 
@@ -21,6 +21,7 @@ class SystemUser(models.Model):
     contact_number = models.CharField(max_length=15, verbose_name="Contact Number")
     username = models.CharField(max_length=100, verbose_name="Username", unique=True)
     password = models.CharField(max_length=100, verbose_name="Password")
+    user_image = models.ImageField(upload_to=image_path, default='profile_pic/image.png')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
 
     def image_tag(self):
