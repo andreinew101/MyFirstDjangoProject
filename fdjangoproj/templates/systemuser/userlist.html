@@ -1,8 +1,10 @@
-{% include "partials/header.html %"}
+{% load static %}
+{% include "partials/header.html" %}
 
     <body class="sb-nav-fixed">
 
         {% include "partials/navbar.html" %}
+
         <div id="layoutSidenav">
 
             {% include "partials/sidebar.html" %}
@@ -10,10 +12,11 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Dashboard</h1>
+                        <h1 class="mt-4">User List</h1>
                         <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">User List</li>
+                            <li class="breadcrumb-item active">System User/li>
                         </ol>
+
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-table me-1"></i>
