@@ -1,0 +1,42 @@
+{% include "partials/header.html" %}
+
+<body class="sb-nav-fixed">
+
+    {% include "partials/navbar.html" %}
+
+    <div id="layoutSidenav">
+        {% include "partials/sidebar.html" %}
+
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Add User</h1>
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item active">System User</li>
+                    </ol>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-user-plus me-1"></i>
+                            User Form
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <a href="{% url 'userlist' %}" class="btn btn-secondary">Cancel</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            {% include "partials/footer.html" %}
+        </div>
+    </div>
+
+    {% include "partials/scripts.html" %}
+</body>
+</html>
