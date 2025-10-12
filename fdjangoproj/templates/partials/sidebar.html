@@ -3,25 +3,29 @@
         <div class="sb-sidenav-menu">
             <div class="nav">
                 <div class="sb-sidenav-menu-heading">Core</div>
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="{% url 'index' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                     Dashboard
                 </a>
+
                 <div class="sb-sidenav-menu-heading">Main</div>
                 <a class="nav-link" href="{% url 'adduser' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                    Add user
+                    <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
+                    Add User
                 </a>
                 <a class="nav-link" href="{% url 'userlist' %}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                    User Lists
+                    <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
+                    User List
                 </a>
             </div> <!-- closes .nav -->
         </div> <!-- closes .sb-sidenav-menu -->
 
+        <!-- ✅ Move Logout to the footer -->
         <div class="sb-sidenav-footer">
-            <div class="small">Logged in as:</div>
-            Start Bootstrap
+            <a class="nav-link text-white" href="{% url 'logout' %}">
+                <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt"></i></div>
+                Logout
+            </a>
         </div>
     </nav>
 </div>
