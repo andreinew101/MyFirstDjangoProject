@@ -1,39 +1,89 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+#from django.contrib.auth.hashers import check_password
+from django.contrib.auth.decorators import login_required
 from .models import SystemUser
 from .forms import SystemUserForm
+from .decorators import systemuser_login_required
 
+from django.contrib.auth.models import User
+from django.contrib.auth import logout
 
 # 🔹 LOGIN VIEW
 def login_view(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        # 1️⃣ Try authenticating a Django built-in user
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('index')  # go to dashboard after login
-        else:
-            messages.error(request, "Invalid username or password.")
+            messages.success(request, f"Welcome back, {user.username}!")
+            return redirect('index')
+        # 2️⃣ If not found, check SystemUser model
+        try:
+            system_user = SystemUser.objects.get(username=username)
+            
+            # For plain text passwords:
+            if system_user.password == password:
+                request.session['system_user_id'] = system_user.id
+                request.session['system_user_name'] = system_user.username
+                messages.success(request, f"Welcome back, {system_user.username}!")
+                return redirect('index')
+
+            # If you later use hashed passwords:
+            # if check_password(password, system_user.password):
+            #     request.session['system_user_id'] = system_user.id
+            #     request.session['system_user_name'] = system_user.username
+            #     messages.success(request, f"Welcome back, {system_user.username}!")
+            #     return redirect('index')
+
+            else:
+                messages.error(request, "Invalid password.")
+
+        except SystemUser.DoesNotExist:
+            messages.error(request, "Username not found.")
+
     return render(request, 'systemuser/login.html')
+
 
 
 # 🔹 LOGOUT VIEW
 def logout_view(request):
-    logout(request)
+    # Log out Django user if logged in
+    if request.user.is_authenticated:
+        logout(request)
+    # Clear SystemUser session if used
+    request.session.flush()
     return redirect('login')
 
 
+# 🔹 COMBINED LOGIN PROTECTION DECORATOR
+def combined_login_required(view_func):
+    """Allow access if Django user is logged in or SystemUser session exists."""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated and 'system_user_id' not in request.session:
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def index(request):
+    # Allow access if logged in as either Django or SystemUser
+    if request.user.is_authenticated or 'system_user_id' in request.session:
+        return render(request, 'systemuser/index.html')
+    else:
+        return redirect('login')
+
 # 🔹 DASHBOARD (requires login)
-@login_required(login_url='login')
+@combined_login_required
 def index(request):
     return render(request, 'systemuser/index.html')
 
 
 # 🔹 USER LIST (requires login)
-@login_required(login_url='login')
+@combined_login_required
 def userlist(request):
     user_list = SystemUser.objects.all()
     context = {'user_list': user_list}
@@ -41,7 +91,7 @@ def userlist(request):
 
 
 # 🔹 ADD USER (requires login)
-@login_required(login_url='login')
+@combined_login_required
 def adduser(request):
     if request.method == "POST":
         form = SystemUserForm(request.POST, request.FILES)
