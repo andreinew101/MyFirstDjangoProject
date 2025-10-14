@@ -12,7 +12,7 @@ class SystemUserForm(forms.ModelForm):
             'contact_number',
             'username',
             'password',
-            'user_image',
+            'user_image',       
         ]
         widgets = {
             'password': forms.PasswordInput(),
@@ -31,10 +31,14 @@ class InventoryItemForm(forms.ModelForm):
         model = InventoryItem
         fields = '__all__'
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'item_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'supplier': forms.TextInput(attrs={'class': 'form-control'}),
+            'reorder_level': forms.NumberInput(attrs={'class': 'form-control'}),
+            'maximum_level': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
 class CategoryForm(forms.ModelForm):
@@ -45,3 +49,7 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = InventoryItem
+        fields = '__all__'  # Include all fields in the model

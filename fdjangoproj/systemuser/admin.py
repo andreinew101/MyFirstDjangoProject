@@ -12,10 +12,21 @@ admin.site.register(SystemUser, SystemUserAdmin)
 
 # --- InventoryItem Admin ---
 class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ('item_id', 'item_name', 'category', 'quantity', 'price', 'date_added', 'date_modified')
-    search_fields = ('item_name', 'category__name')  # FK requires double underscore
-    list_filter = ('category', 'date_added')
-    ordering = ('item_id',)  # Descending by ID
+    list_display = (
+        'item_id', 
+        'item_name', 
+        'description',
+        'category', 
+        'quantity', 
+        'price',
+        'supplier', 
+        'reorder_level', 
+        'maximum_level', 
+        'date_added', 
+        'date_modified'
+    )
+    search_fields = ('item_name', 'supplier')
+    list_filter = ('category',)
 
 admin.site.register(InventoryItem, InventoryItemAdmin)
 

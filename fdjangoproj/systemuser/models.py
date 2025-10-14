@@ -12,7 +12,7 @@ def image_path(instance, filename):
     randomstr = ''.join((random.choice)(chars) for x in range(10))
     _now = datetime.now()
 
-    return 'profile_pic\{basename}_{randomstring}{ext}'.format(basename=basefilename, randomstring=randomstr, ext=file_extension)
+    return r'profile_pic\{basename}_{randomstring}{ext}'.format(basename=basefilename, randomstring=randomstr, ext=file_extension)
 
 class SystemUser(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="First Name")
@@ -46,6 +46,10 @@ class InventoryItem(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    supplier = models.CharField(max_length=255, blank=True, null=True)
+    reorder_level = models.PositiveIntegerField(blank=True, null=True)
+    maximum_level = models.PositiveIntegerField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
