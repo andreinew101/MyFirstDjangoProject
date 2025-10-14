@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
-from .models import SystemUser, InventoryItem
+from .models import SystemUser, InventoryItem, Category
 from .forms import SystemUserForm, InventoryItemForm, CategoryForm
 from .decorators import systemuser_login_required
 
@@ -127,7 +127,7 @@ def add_category(request):
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('add_item')  # after adding, go back to item form
+            return redirect('add_item')  # Go back to Add Item page
     else:
         form = CategoryForm()
-    return render(request, 'inventory/add_category.html', {'form': form})
+    return render(request, 'systemuser/add_category.html', {'form': form})

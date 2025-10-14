@@ -44,7 +44,7 @@ class InventoryItemForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name']
+        fields = ['name']  # Adjust this based on your actual model field name
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }

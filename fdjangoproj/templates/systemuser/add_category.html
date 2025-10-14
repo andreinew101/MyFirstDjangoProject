@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 {% include "partials/header.html" %}
 <body class="sb-nav-fixed">
     {% include "partials/navbar.html" %}
@@ -6,16 +7,29 @@
         {% include "partials/sidebar.html" %}
         <div id="layoutSidenav_content">
             <main>
-                <div class="container mt-4 text-center">
-                    <h2>Add New Category</h2>
-                    <form method="post" class="mt-3">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-success mt-2">Save Category</button>
-                    </form>
+                <div class="container mt-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h2 class="text-center mb-4">Add New Category</h2>
+
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label for="id_name" class="form-label">Category Name</label>
+                                            {{ form.name|add_class:"form-control" }}
+                                        </div>
+                                        <button type="submit" class="btn btn-success mt-2">Save Category</button>
+                                        <a href="{% url 'add_item' %}" class="btn btn-secondary mt-2">Back to Items</a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
-            {% include "partials/footer.html" %}
+            {% include "partials/footer.html" %}    
         </div>
     </div>
     {% include "partials/scripts.html" %}
