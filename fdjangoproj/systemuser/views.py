@@ -131,3 +131,14 @@ def add_category(request):
     else:
         form = CategoryForm()
     return render(request, 'systemuser/add_category.html', {'form': form})
+
+#=================================================================================
+
+@combined_login_required
+def delete_item(request, pk):
+    item = get_object_or_404(InventoryItem, item_id=pk)
+    if request.method == 'POST':
+        item.delete()
+        messages.success(request, 'Item deleted successfully!')
+        return redirect('item_list')
+    return render(request, 'systemuser/confirm_delete.html', {'item': item})
