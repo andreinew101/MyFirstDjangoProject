@@ -1,0 +1,34 @@
+{% load static %}
+{% include "partials/header.html" %}
+<body class="sb-nav-fixed">
+    {% include "partials/navbar.html" %}
+    <div id="layoutSidenav">
+        {% include "partials/sidebar.html" %}
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container mt-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h2 class="card-title text-center mb-4">Add New Item</h2>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        {{ form.as_p }}
+                                        <div class="d-flex justify-content-center mt-3 gap-2">
+                                            <button type="submit" class="btn btn-success">Save Item</button>
+                                            <a href="{% url 'item_list' %}" class="btn btn-secondary">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            {% include "partials/footer.html" %}
+        </div>
+    </div>
+    {% include "partials/scripts.html" %}
+</body>
+

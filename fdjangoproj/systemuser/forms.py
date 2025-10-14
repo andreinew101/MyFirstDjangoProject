@@ -48,3 +48,8 @@ class InventoryItemForm(forms.ModelForm):
             'reorder_level': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
             'maximum_level': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         }
+
+class InventoryItemForm(forms.ModelForm):
+    class Meta:
+        model = InventoryItem
+        fields = ['item_name', 'category', 'quantity', 'price', 'supplier', 'reorder_level', 'maximum_level']

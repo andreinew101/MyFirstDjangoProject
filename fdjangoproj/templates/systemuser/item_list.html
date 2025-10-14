@@ -1,73 +1,74 @@
-{% load static %}
-{% include "partials/header.html" %}
-<body class="sb-nav-fixed">
-    {% include "partials/navbar.html" %}
-    <div id="layoutSidenav">
-        {% include "partials/sidebar.html" %}
-        <div id="layoutSidenav_content">
-            <main>
-                <div class="container-fluid px-4">
-                    <h2 class="mt-4">Inventory Items</h2>
-                    <a href="{% url 'add_item' %}" class="btn btn-primary mb-3">Add New Item</a>
-                    
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            Inventory Table
-                        </div>
-                        <div class="card-body">
-                            <table id="datatablesSimple" class="table table-bordered table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th>Price</th>
-                                        <th>Supplier</th>
-                                        <th>Reorder Level</th>
-                                        <th>Maximum Level</th>
-                                        <th>Date Added</th>
-                                        <th>Date Modified</th>
-                                    </tr>
-                                </thead>
-                                <tfoot>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th>Price</th>
-                                        <th>Supplier</th>
-                                        <th>Reorder Level</th>
-                                        <th>Maximum Level</th>
-                                        <th>Date Added</th>
-                                        <th>Date Modified</th>
-                                    </tr>
-                                </tfoot>
-                                <tbody>
-                                    {% for item in items %}
-                                    <tr>
-                                        <td>{{ item.item_id }}</td>
-                                        <td>{{ item.item_name }}</td>
-                                        <td>{{ item.category }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>{{ item.price }}</td>
-                                        <td>{{ item.supplier }}</td>
-                                        <td>{{ item.reorder_level }}</td>
-                                        <td>{{ item.maximum_level }}</td>
-                                        <td>{{ item.date_added|date:"Y-m-d" }}</td>
-                                        <td>{{ item.date_modified|date:"Y-m-d" }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+    {% load static %}
+    {% load tz %}
+    {% include "partials/header.html" %}
+    <body class="sb-nav-fixed">
+        {% include "partials/navbar.html" %}
+        <div id="layoutSidenav">
+            {% include "partials/sidebar.html" %}
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4">
+                        <h2 class="mt-4">Inventory Items</h2>
+                        <a href="{% url 'add_item' %}" class="btn btn-primary mb-3">Add New Item</a>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                Inventory Table
+                            </div>
+                            <div class="card-body">
+                                <table id="datatablesSimple" class="table table-bordered table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Supplier</th>
+                                            <th>Reorder Level</th>
+                                            <th>Maximum Level</th>
+                                            <th>Date Added</th>
+                                            <th>Date Modified</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Supplier</th>
+                                            <th>Reorder Level</th>
+                                            <th>Maximum Level</th>
+                                            <th>Date Added</th>
+                                            <th>Date Modified</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                        {% for item in items %}
+                                        <tr>
+                                            <td>{{ item.item_id }}</td>
+                                            <td>{{ item.item_name }}</td>
+                                            <td>{{ item.category }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>{{ item.price }}</td>
+                                            <td>{{ item.supplier }}</td>
+                                            <td>{{ item.reorder_level }}</td>
+                                            <td>{{ item.maximum_level }}</td>
+                                            <td>{{ item.date_added|localtime|date:"M d, Y H:i" }}</td>
+                                            <td>{{ item.date_modified|localtime|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </main>
-            {% include "partials/footer.html" %}
+                </main>
+                {% include "partials/footer.html" %}
+            </div>
         </div>
-    </div>
-    {% include "partials/scripts.html" %}
-</body>
+        {% include "partials/scripts.html" %}
+    </body>

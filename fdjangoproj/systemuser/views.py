@@ -106,7 +106,7 @@ def adduser(request):
 #=============================MOFIFY ITEMS TAB==========================
 
 # 🔹 Inventory List View
-@combined_login_required
+@combined_login_required    
 def item_list(request):
     items = InventoryItem.objects.all().order_by('-date_added')
     return render(request, 'systemuser/item_list.html', {'items': items})
@@ -137,3 +137,14 @@ def edit_item(request, pk):
     else:
         form = InventoryItemForm(instance=item)
     return render(request, 'systemuser/edit_item.html', {'form': form, 'item': item})
+
+#=======================ADD ITEMS======================
+def add_item(request):
+    if request.method == 'POST':
+        form = InventoryItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('item_list')
+    else:
+        form = InventoryItemForm()
+    return render(request, 'systemuser/add_item.html', {'form': form})
