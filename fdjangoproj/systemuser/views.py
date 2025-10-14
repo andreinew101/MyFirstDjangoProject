@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm
+from .forms import SystemUserForm, InventoryItemForm, CategoryForm
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -32,14 +32,6 @@ def login_view(request):
                 request.session['system_user_name'] = system_user.username
                 messages.success(request, f"Welcome back, {system_user.username}!")
                 return redirect('index')
-
-            # If you later use hashed passwords:
-            # if check_password(password, system_user.password):
-            #     request.session['system_user_id'] = system_user.id
-            #     request.session['system_user_name'] = system_user.username
-            #     messages.success(request, f"Welcome back, {system_user.username}!")
-            #     return redirect('index')
-
             else:
                 messages.error(request, "Invalid password.")
 
@@ -49,13 +41,10 @@ def login_view(request):
     return render(request, 'systemuser/login.html')
 
 
-
 # 🔹 LOGOUT VIEW
 def logout_view(request):
-    # Log out Django user if logged in
     if request.user.is_authenticated:
         logout(request)
-    # Clear SystemUser session if used
     request.session.flush()
     return redirect('login')
 
@@ -69,12 +58,6 @@ def combined_login_required(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
-def index(request):
-    # Allow access if logged in as either Django or SystemUser
-    if request.user.is_authenticated or 'system_user_id' in request.session:
-        return render(request, 'systemuser/index.html')
-    else:
-        return redirect('login')
 
 # 🔹 DASHBOARD (requires login)
 @combined_login_required
@@ -103,12 +86,12 @@ def adduser(request):
     return render(request, 'systemuser/adduser.html', {'form': form})
 
 
-#=============================MOFIFY ITEMS TAB==========================
+#============================= INVENTORY ITEMS ==========================
 
 # 🔹 Inventory List View
 @combined_login_required    
 def item_list(request):
-    items = InventoryItem.objects.all().order_by('-date_added')
+    items = InventoryItem.objects.all().order_by('-item_id')  # changed from '-id'
     return render(request, 'systemuser/item_list.html', {'items': items})
 
 # 🔹 Add Item View
@@ -118,7 +101,6 @@ def add_item(request):
         form = InventoryItemForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Item added successfully!')
             return redirect('item_list')
     else:
         form = InventoryItemForm()
@@ -127,7 +109,7 @@ def add_item(request):
 # 🔹 Edit Item View
 @combined_login_required
 def edit_item(request, pk):
-    item = get_object_or_404(InventoryItem, pk=pk)
+    item = get_object_or_404(InventoryItem, item_id=pk)  # changed from pk=pk
     if request.method == 'POST':
         form = InventoryItemForm(request.POST, instance=item)
         if form.is_valid():
@@ -138,13 +120,14 @@ def edit_item(request, pk):
         form = InventoryItemForm(instance=item)
     return render(request, 'systemuser/edit_item.html', {'form': form, 'item': item})
 
-#=======================ADD ITEMS======================
-def add_item(request):
+
+# 🔹 Add Category View
+def add_category(request):
     if request.method == 'POST':
-        form = InventoryItemForm(request.POST)
+        form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('item_list')
+            return redirect('add_item')  # after adding, go back to item form
     else:
-        form = InventoryItemForm()
-    return render(request, 'systemuser/add_item.html', {'form': form})
+        form = CategoryForm()
+    return render(request, 'inventory/add_category.html', {'form': form})

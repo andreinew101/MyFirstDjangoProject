@@ -1,5 +1,5 @@
 from django import forms
-from .models import SystemUser, InventoryItem
+from .models import SystemUser, InventoryItem, Category
 from django.contrib.auth.hashers import make_password
 
 class SystemUserForm(forms.ModelForm):
@@ -25,31 +25,23 @@ class SystemUserForm(forms.ModelForm):
             user.save()
         return user
     
-class InventoryItemForm(forms.ModelForm):
-    class Meta:
-        model = InventoryItem
-        fields = [
-            'item_name',
-            'category',
-            'quantity',
-            'price',
-            'supplier',
-            'description',
-            'reorder_level',
-            'maximum_level',
-        ]
-        widgets = {
-            'item_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter item name'}),
-            'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter category'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'supplier': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter supplier'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'reorder_level': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'maximum_level': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-        }
 
 class InventoryItemForm(forms.ModelForm):
     class Meta:
         model = InventoryItem
-        fields = ['item_name', 'category', 'quantity', 'price', 'supplier', 'reorder_level', 'maximum_level']
+        fields = '__all__'
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'item_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+

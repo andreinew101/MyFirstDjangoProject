@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import SystemUser, InventoryItem
+from .models import SystemUser, InventoryItem, Category
 
+# --- SystemUser Admin ---
 class SystemUserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email', 'contact_number', 'username', 'image_tag', 'created_at')
     search_fields = ('first_name', 'last_name', 'email', 'username')
@@ -9,13 +10,19 @@ class SystemUserAdmin(admin.ModelAdmin):
 
 admin.site.register(SystemUser, SystemUserAdmin)
 
-from django.contrib import admin
-from .models import InventoryItem
-
+# --- InventoryItem Admin ---
 class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ('item_id', 'item_name', 'category', 'quantity', 'price', 'supplier', 'reorder_level', 'maximum_level', 'date_added', 'date_modified')
-    search_fields = ('item_name', 'category', 'supplier')
-    list_filter = ('category', 'supplier', 'date_added')
-    ordering = ('-date_added',)
+    list_display = ('item_id', 'item_name', 'category', 'quantity', 'price', 'date_added', 'date_modified')
+    search_fields = ('item_name', 'category__name')  # FK requires double underscore
+    list_filter = ('category', 'date_added')
+    ordering = ('item_id',)  # Descending by ID
 
 admin.site.register(InventoryItem, InventoryItemAdmin)
+
+# --- Category Admin ---
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    ordering = ('name',)
+
+admin.site.register(Category, CategoryAdmin)
