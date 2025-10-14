@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
-from .models import SystemUser
-from .forms import SystemUserForm
+from .models import SystemUser, InventoryItem
+from .forms import SystemUserForm, InventoryItemForm
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -101,3 +101,39 @@ def adduser(request):
     else:
         form = SystemUserForm()
     return render(request, 'systemuser/adduser.html', {'form': form})
+
+
+#=============================MOFIFY ITEMS TAB==========================
+
+# 🔹 Inventory List View
+@combined_login_required
+def item_list(request):
+    items = InventoryItem.objects.all().order_by('-date_added')
+    return render(request, 'systemuser/item_list.html', {'items': items})
+
+# 🔹 Add Item View
+@combined_login_required
+def add_item(request):
+    if request.method == 'POST':
+        form = InventoryItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Item added successfully!')
+            return redirect('item_list')
+    else:
+        form = InventoryItemForm()
+    return render(request, 'systemuser/add_item.html', {'form': form})
+
+# 🔹 Edit Item View
+@combined_login_required
+def edit_item(request, pk):
+    item = get_object_or_404(InventoryItem, pk=pk)
+    if request.method == 'POST':
+        form = InventoryItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Item updated successfully!')
+            return redirect('item_list')
+    else:
+        form = InventoryItemForm(instance=item)
+    return render(request, 'systemuser/edit_item.html', {'form': form, 'item': item})
