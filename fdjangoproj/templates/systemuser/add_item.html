@@ -1,65 +1,64 @@
 {% load static %}
 {% include "partials/header.html" %}
+
 <body class="sb-nav-fixed">
     {% include "partials/navbar.html" %}
     <div id="layoutSidenav">
         {% include "partials/sidebar.html" %}
         <div id="layoutSidenav_content">
             <main>
-                <div class="container mt-5">
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                            <div class="card shadow-sm">
-                                <div class="container mt-4">
-                                    <h2 class="text-center mb-4">Add New Item</h2>
-                                    <form method="post">
-                                        {% csrf_token %}
+                <div class="container-fluid px-4">
+                    <h2 class="mt-4">Add New Item</h2>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
 
-                                        <div class="mb-3">
-                                            <label for="id_item_name" class="form-label">Item Name</label>
-                                            {{ form.item_name }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_item_name" class="form-label">Description</label>
-                                            {{ form.description }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_category" class="form-label">Category</label>
-                                            {{ form.category }}
-                                            <a href="{% url 'add_category' %}" class="btn btn-sm btn-outline-primary mt-2">Add New Category</a>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_quantity" class="form-label">Quantity</label>
-                                            {{ form.quantity }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_price" class="form-label">Price</label>
-                                            {{ form.price }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_supplier" class="form-label">Supplier</label>
-                                            {{ form.supplier }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_reorder_level" class="form-label">Reorder Level</label>
-                                            {{ form.reorder_level }}
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="id_maximum_level" class="form-label">Maximum Level</label>
-                                            {{ form.maximum_level }}
-                                        </div>
-
-                                        <button type="submit" class="btn btn-success w-100 mt-2">Save Item</button>
-                                    </form>
+                                <div class="mb-1">
+                                    <label for="id_item_name" class="form-label">Item Name</label>
+                                    {{ form.item_name }}
                                 </div>
-                            </div>
+
+                                <div class="mb-1">
+                                    <label for="id_category" class="form-label">Category</label>
+                                    {{ form.category }}
+                                    <a href="{% url 'add_category' %}" class="btn btn-sm btn-outline-primary mt-2">Add New Category</a>
+                                </div>
+
+                                <div class="mb-1">
+                                    <label for="id_quantity" class="form-label">Quantity</label>
+                                    {{ form.quantity }}
+                                </div>
+
+                                <div class="mb-1">
+                                    <label for="id_price" class="form-label">Price</label>
+                                    {{ form.price }}
+                                </div>
+
+                                <div class="mb-1">
+                                    <label for="id_supplier" class="form-label">Supplier</label>
+                                    {{ form.supplier }}
+                                </div>
+
+                                <div class="mb-1">
+                                    <label for="id_reorder_level" class="form-label">Reorder Level</label>
+                                    {{ form.reorder_level }}
+                                </div>
+
+                                <div class="mb-1">
+                                    <label for="id_maximum_level" class="form-label">Maximum Level</label>
+                                    {{ form.maximum_level }}
+                                </div>
+
+                                 <div class="mb-1">
+                                    <label for="id_item_name" class="form-label">Description</label>
+                                    {{ form.description }}
+                                </div>
+
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success w-20 mt-2">Add Item</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -69,3 +68,6 @@
     </div>
     {% include "partials/scripts.html" %}
 </body>
+
+
+

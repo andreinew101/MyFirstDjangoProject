@@ -1,0 +1,28 @@
+{% load static %}
+{% include "partials/header.html" %}
+
+<body class="sb-nav-fixed">
+    {% include "partials/navbar.html" %}
+    <div id="layoutSidenav">
+        {% include "partials/sidebar.html" %}
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h2 class="mt-4">Edit Item: {{ item.item_name }}</h2>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                                <a href="{% url 'item_list' %}" class="btn btn-secondary">Cancel</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            {% include "partials/footer.html" %}
+        </div>
+    </div>
+    {% include "partials/scripts.html" %}
+</body>
