@@ -10,6 +10,9 @@ from .decorators import systemuser_login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 
+from django.db import models
+from django.db.models import Sum
+
 # 🔹 LOGIN VIEW
 def login_view(request):
     if request.method == 'POST':
@@ -60,10 +63,19 @@ def combined_login_required(view_func):
 
 
 # 🔹 DASHBOARD (requires login)
-@combined_login_required
 def index(request):
-    return render(request, 'systemuser/index.html')
+    total_items = InventoryItem.objects.count()
+    low_stock_count = InventoryItem.objects.filter(quantity__lte=models.F('reorder_level')).count()
+    out_of_stock_count = InventoryItem.objects.filter(quantity=0).count()
+    supplier_count = InventoryItem.objects.values('supplier').distinct().count()
 
+    context = {
+        'total_items': total_items,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'supplier_count': supplier_count,
+    }
+    return render(request, 'systemuser/index.html', context)
 
 # 🔹 USER LIST (requires login)
 @combined_login_required
@@ -142,3 +154,33 @@ def delete_item(request, pk):
         messages.success(request, 'Item deleted successfully!')
         return redirect('item_list')
     return render(request, 'systemuser/confirm_delete.html', {'item': item})
+
+from django.db.models import Sum
+from .models import InventoryItem  # make sure this import exists
+
+@combined_login_required
+def index(request):
+    # 📦 Compute key stats
+    total_items = InventoryItem.objects.count()
+    total_quantity = InventoryItem.objects.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    low_stock_count = InventoryItem.objects.filter(quantity__lte=10).count()
+    out_of_stock_count = InventoryItem.objects.filter(quantity=0).count()
+    supplier_count = InventoryItem.objects.values('supplier').distinct().count()
+
+    # 🧮 Compute dynamic maximum storage capacity
+    max_capacity = InventoryItem.objects.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
+
+    # 🟩 Compute storage usage based on total quantities
+    storage_used_percentage = round((total_quantity / max_capacity) * 100, 2) if max_capacity > 0 else 0
+
+    context = {
+        'total_items': total_items,
+        'total_quantity': total_quantity,  # sum of all quantities
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'supplier_count': supplier_count,
+        'max_capacity': max_capacity,      # sum of all max levels
+        'storage_used_percentage': storage_used_percentage,
+    }
+
+    return render(request, 'systemuser/index.html', context)
