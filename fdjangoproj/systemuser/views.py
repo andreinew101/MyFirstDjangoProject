@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
-from .models import SystemUser, InventoryItem, Category
+from .models import SystemUser, InventoryItem, Category, InventoryItem
 from .forms import SystemUserForm, InventoryItemForm, CategoryForm
 from .decorators import systemuser_login_required
 
@@ -11,7 +11,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout
 
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Count
+
+
 
 # 🔹 LOGIN VIEW
 def login_view(request):
@@ -63,19 +65,7 @@ def combined_login_required(view_func):
 
 
 # 🔹 DASHBOARD (requires login)
-def index(request):
-    total_items = InventoryItem.objects.count()
-    low_stock_count = InventoryItem.objects.filter(quantity__lte=models.F('reorder_level')).count()
-    out_of_stock_count = InventoryItem.objects.filter(quantity=0).count()
-    supplier_count = InventoryItem.objects.values('supplier').distinct().count()
 
-    context = {
-        'total_items': total_items,
-        'low_stock_count': low_stock_count,
-        'out_of_stock_count': out_of_stock_count,
-        'supplier_count': supplier_count,
-    }
-    return render(request, 'systemuser/index.html', context)
 
 # 🔹 USER LIST (requires login)
 @combined_login_required
@@ -160,27 +150,47 @@ from .models import InventoryItem  # make sure this import exists
 
 @combined_login_required
 def index(request):
-    # 📦 Compute key stats
-    total_items = InventoryItem.objects.count()
-    total_quantity = InventoryItem.objects.aggregate(Sum('quantity'))['quantity__sum'] or 0
-    low_stock_count = InventoryItem.objects.filter(quantity__lte=10).count()
-    out_of_stock_count = InventoryItem.objects.filter(quantity=0).count()
+    items = InventoryItem.objects.all()
+
+    # Total items and quantities
+    total_items = items.count()
+    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    max_capacity = items.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
+    storage_used_percentage = round((total_quantity / max_capacity) * 100, 2) if max_capacity else 0
+
+    # 🔸 New summary stats
+    low_stock_count = items.filter(quantity__lt=models.F('reorder_level'), quantity__gt=0).count()
+    out_of_stock_count = items.filter(quantity=0).count()
     supplier_count = InventoryItem.objects.values('supplier').distinct().count()
 
-    # 🧮 Compute dynamic maximum storage capacity
-    max_capacity = InventoryItem.objects.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
+    # 🎯 Category-level data
+    category_data = []
+    colors = ["#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1", "#20c997"]
 
-    # 🟩 Compute storage usage based on total quantities
-    storage_used_percentage = round((total_quantity / max_capacity) * 100, 2) if max_capacity > 0 else 0
+    for i, category in enumerate(Category.objects.all()):
+        cat_items = items.filter(category=category)
+        current = cat_items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+        max_level = cat_items.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
+        percentage = round((current / max_level) * 100, 2) if max_level else 0
+
+        category_data.append({
+            "name": category.name,
+            "percentage": percentage,
+            "current": current,
+            "max": max_level,
+            "color": colors[i % len(colors)]
+        })
 
     context = {
-        'total_items': total_items,
-        'total_quantity': total_quantity,  # sum of all quantities
-        'low_stock_count': low_stock_count,
-        'out_of_stock_count': out_of_stock_count,
-        'supplier_count': supplier_count,
-        'max_capacity': max_capacity,      # sum of all max levels
-        'storage_used_percentage': storage_used_percentage,
+        "total_items": total_items,
+        "total_quantity": total_quantity,
+        "max_capacity": max_capacity,
+        "storage_used_percentage": storage_used_percentage,
+        "low_stock_count": low_stock_count,
+        "out_of_stock_count": out_of_stock_count,
+        "supplier_count": supplier_count,
+        "category_data": category_data,
     }
 
-    return render(request, 'systemuser/index.html', context)
+    return render(request, "systemuser/index.html", context)
+
