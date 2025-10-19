@@ -4,6 +4,8 @@ from django.contrib.auth.admin import UserAdmin
 from .models import SystemUser, InventoryItem, Category
 from .forms import AdminProfileForm
 
+from django.utils.html import format_html
+
 # --- Django's built-in User Admin (Admin Profile) ---
 class CustomUserAdmin(UserAdmin):
     form = AdminProfileForm
@@ -28,10 +30,28 @@ class SystemUserAdmin(admin.ModelAdmin):
         'contact_number',
         'username',
         'created_at',
+        'display_image',
     )
     search_fields = ('first_name', 'last_name', 'email', 'username')
     list_filter = ('created_at',)
     ordering = ('-created_at',)
+    fields = (
+        'first_name',
+        'last_name',
+        'email',
+        'contact_number',
+        'username',
+        'password',
+        'user_image',
+    )
+
+    readonly_fields = ('display_image',)
+
+    def display_image(self, obj):
+        if obj.user_image:
+            return format_html('<img src="{}" width="60" height="60" style="border-radius:50%;">', obj.user_image.url)
+        return "No image"
+    display_image.short_description = "Profile Image"
 
 
 # --- InventoryItem Admin ---
