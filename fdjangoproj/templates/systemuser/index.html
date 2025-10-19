@@ -13,86 +13,101 @@
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
 
-                    <!-- 🧩 Summary Cards -->
-                    <div class="row">
-                        <!-- 🟦 Total Items -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card bg-primary text-white shadow h-100 py-2">
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-white-50 small">Total Items</div>
-                                        <div class="fs-4 fw-bold">{{ total_items }}</div>
+                    <div class="container mt-4">
+                        <div class="row g-4 align-items-start">
+
+                            <!-- 🟢 Left Column (Inventory + Category Chart Side by Side) -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <h5 class="text-center mb-4">
+                                            <i class="bi bi-box-seam me-2"></i> Inventory Overview
+                                        </h5>
+
+                                        <div class="charts-container text-center">
+                                            <!-- 🟩 Progress Circle -->
+                                            <div class="chart-item">
+                                                <p class="text-muted mb-2" style="margin-top: -30px;">Storage Usage</p>
+                                                <div class="progress-circle" data-value="{{ storage_used_percentage }}">
+                                                    <span class="progress-text">{{ storage_used_percentage }}%</span>
+                                                </div>
+                                                <p class="text-muted mb-2" style="margin-top: 10px;">{{ total_quantity }} of {{ max_capacity }} items stored</p>
+                                            </div>
+
+                                            <!-- 🟦 Category Donut Chart -->
+                                            <div class="chart-item">
+                                                <p class="text-muted mb-2">Storage Distribution by Category</p>
+                                                <div class="chart-wrapper">
+                                                    <canvas id="categoryChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="fs-1 opacity-50"><i class="fas fa-boxes"></i></div>
+                                </div>
+                            </div>
+
+                            <!-- 🔵 Right Column (Cards in 2x2 grid) -->
+                            <div class="col-lg-6">
+                                <div class="row g-3">
+
+                                    <!-- 🟦 Total Categories -->
+                                    <div class="col-md-6">
+                                        <div class="card bg-primary text-white shadow h-100 py-2">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="text-white-50 small">Total Categories</div>
+                                                    <div class="fs-4 fw-bold">{{ category_count }}</div>
+                                                </div>  
+                                                <i class="fa-solid fa-tags fa-2x opacity-75"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🟩 Total Items -->
+                                    <div class="col-md-6">
+                                        <div class="card bg-success text-white shadow h-100 py-2">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="text-white-50 small">Total Items</div>
+                                                    <div class="fs-4 fw-bold">{{ total_items }}</div>
+                                                </div>
+                                                <i class="fa-solid fa-box-open fa-2x opacity-75"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🟨 Low Stock Items -->
+                                    <div class="col-md-6">
+                                        <div class="card bg-warning text-white shadow h-100 py-2">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="text-white-50 small">Low Stock</div>
+                                                    <div class="fs-4 fw-bold">{{ low_stock_items }}</div>
+                                                </div>
+                                                <i class="fa-solid fa-triangle-exclamation fa-2x opacity-75"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🟥 Out of Stock -->
+                                    <div class="col-md-6">
+                                        <div class="card bg-danger text-white shadow h-100 py-2">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="text-white-50 small">Out of Stock</div>
+                                                    <div class="fs-4 fw-bold">{{ out_of_stock_items }}</div>
+                                                </div>
+                                                <i class="fa-solid fa-circle-xmark fa-2x opacity-75"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 🟨 Low Stock -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card bg-warning text-white shadow h-100 py-2">
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-white-50 small">Low Stock</div>
-                                        <div class="fs-4 fw-bold">{{ low_stock_count }}</div>
-                                    </div>
-                                    <div class="fs-1 opacity-50"><i class="fas fa-exclamation-triangle"></i></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 🟥 Out of Stock -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card bg-danger text-white shadow h-100 py-2">
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-white-50 small">Out of Stock</div>
-                                        <div class="fs-4 fw-bold">{{ out_of_stock_count }}</div>
-                                    </div>
-                                    <div class="fs-1 opacity-50"><i class="fas fa-times-circle"></i></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 🟩 Suppliers -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card bg-success text-white shadow h-100 py-2">
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-white-50 small">Suppliers</div>
-                                        <div class="fs-4 fw-bold">{{ supplier_count }}</div>
-                                    </div>
-                                    <div class="fs-1 opacity-50"><i class="fas fa-industry"></i></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
-
-                    <!-- 📦 Storage Used -->
-                    <div class="text-center mt-4">
-                        <h5 class="mb-3">
-                            <i class="bi bi-box-seam me-2"></i> Inventory Storage Used
-                        </h5>
-
-                        <div class="progress-circle" data-value="{{ storage_used_percentage }}">
-                            <span class="progress-text">{{ storage_used_percentage }}%</span>
-                        </div>
-
-                        <p class="text-muted mt-3 mb-0">
-                            {{ total_quantity }} of {{ max_capacity }} items stored
-                        </p>
-                    </div>
-
-                    <!-- 🏷 Category Distribution Chart -->
-                    <div class="card mt-5 shadow-sm">
-                        <div class="card-body text-center">
-                            <h5 class="mb-4">
-                                <i class="bi bi-pie-chart-fill me-2"></i> Storage Distribution by Category
-                            </h5>
-                            <canvas id="categoryChart" style="max-height: 300px;"></canvas>
-                        </div>
-                    </div>
-
 
                     <!-- 🧾 Sample DataTable -->
                     <div class="card-body mt-4">
@@ -129,45 +144,63 @@
 
 <!-- 🎨 Styles -->
 <style>
+/* ===== Progress Circle ===== */
 .progress-circle {
-  --size: 250px;
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--bar-color, #198754) calc(var(--percent, 0) * 1%),
-    #e9ecef 0
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  position: relative;
-  transition: background 0.6s ease-in-out;
-}
-
-.progress-circle.small {
-  --size: 120px;
-}
-
-.progress-text.small-text {
-  font-size: 1.2rem;
+    --size: 240px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--bar-color, #198754) calc(var(--percent, 0) * 1%),
+        #e9ecef 0
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    position: relative;
+    transition: background 0.1s linear;
 }
 
 .progress-circle::before {
-  content: "";
-  position: absolute;
-  width: calc(var(--size) - 75px);
-  height: calc(var(--size) - 75px);
-  background: #fff;
-  border-radius: 50%;
+    content: "";
+    position: absolute;
+    width: calc(var(--size) - 75px);
+    height: calc(var(--size) - 75px);
+    background: #fff;
+    border-radius: 50%;
 }
 
 .progress-text {
-  position: relative;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #212529;
+    position: relative;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+/* ===== Charts Alignment Fix ===== */
+.charts-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+    flex-wrap: wrap;
+}
+
+.chart-item {
+    text-align: center;
+}
+
+.chart-wrapper {    
+    width: 310px;
+    height: 310px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#categoryChart {
+    width: 100% !important;
+    height: 100% !important;
 }
 </style>
 
@@ -175,45 +208,78 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Category Chart
-  const ctx = document.getElementById('categoryChart').getContext('2d');
-  const categoryData = {{ category_data|safe }};
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: categoryData.map(c => c.name),
-      datasets: [{
-        data: categoryData.map(c => c.percentage),
-        backgroundColor: categoryData.map(c => c.color),
-        borderWidth: 2
-      }]
-    },
-    options: {
-      cutout: '70%',
-      plugins: {
-        legend: { position: 'bottom' },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `${context.label}: ${context.formattedValue}%`;
+    // Category Chart
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const categoryData = {{ category_data|safe }};
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(c => c.name),
+            datasets: [{
+                data: categoryData.map(c => c.percentage),
+                backgroundColor: categoryData.map(c => c.color),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            cutout: '68%',
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.formattedValue}%`;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
-  });
+    });
 
-  // Circular Progress Animation
-  document.querySelectorAll(".progress-circle").forEach(circle => {
-    const value = parseFloat(circle.getAttribute("data-value")) || 0;
-    const percent = Math.min(Math.max(value, 0), 100);
-    circle.style.setProperty("--percent", percent);
+    // 🟢 Inventory Progress Circle Animation (with ease-out)
+    document.querySelectorAll(".progress-circle").forEach(circle => {
+        const value = parseFloat(circle.getAttribute("data-value")) || 0;
+        const targetPercent = Math.min(Math.max(value, 0), 100);
 
-    let color = "#198754"; // green
-    if (percent > 70 && percent <= 90) color = "#ffc107"; // yellow
-    else if (percent > 90) color = "#dc3545"; // red
+        // Color logic
+        let color = "#198754"; // green
+        if (targetPercent > 70 && targetPercent <= 90) color = "#ffc107"; // yellow
+        else if (targetPercent > 90) color = "#dc3545"; // red
+        circle.style.setProperty("--bar-color", color);
 
-    circle.style.setProperty("--bar-color", color);
-  });
+        // Animation setup
+        let startTime = null;
+        const duration = 1000; // in ms (1.5 seconds)
+        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+        function animateProgress(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1); // normalize to 0–1
+            const eased = easeOutCubic(progress);
+            const current = Math.round(eased * targetPercent);
+
+            circle.style.setProperty("--percent", current);
+
+            if (progress < 1) {
+                requestAnimationFrame(animateProgress);
+            }
+        }
+
+        requestAnimationFrame(animateProgress);
+    });
+
+    // Circular Progress Animation
+    document.querySelectorAll(".progress-circle").forEach(circle => {
+        const value = parseFloat(circle.getAttribute("data-value")) || 0;
+        const percent = Math.min(Math.max(value, 0), 100);
+        circle.style.setProperty("--percent", percent);
+
+        let color = "#198754"; // green
+        if (percent > 70 && percent <= 90) color = "#ffc107"; // yellow
+        else if (percent > 90) color = "#dc3545"; // red
+
+        circle.style.setProperty("--bar-color", color);
+    });
 });
 </script>

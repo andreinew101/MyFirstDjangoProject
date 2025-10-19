@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout
 
 from django.db import models
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 
 
 
@@ -149,48 +149,36 @@ from django.db.models import Sum
 from .models import InventoryItem  # make sure this import exists
 
 @combined_login_required
+
 def index(request):
-    items = InventoryItem.objects.all()
+    total_items = InventoryItem.objects.count()
+    low_stock_items = InventoryItem.objects.filter(quantity__lte=F('reorder_level')).count()
+    out_of_stock_items = InventoryItem.objects.filter(quantity=0).count()
+    category_count = Category.objects.count()
 
-    # Total items and quantities
-    total_items = items.count()
-    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
-    max_capacity = items.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
-    storage_used_percentage = round((total_quantity / max_capacity) * 100, 2) if max_capacity else 0
+    # Calculate total quantity and storage usage
+    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
+    max_capacity = InventoryItem.objects.aggregate(total=Sum('maximum_level'))['total'] or 0
+    storage_used_percentage = (total_quantity / max_capacity) * 100 if max_capacity > 0 else 0
 
-    # 🔸 New summary stats
-    low_stock_count = items.filter(quantity__lt=models.F('reorder_level'), quantity__gt=0).count()
-    out_of_stock_count = items.filter(quantity=0).count()
-    supplier_count = InventoryItem.objects.values('supplier').distinct().count()
-
-    # 🎯 Category-level data
+    # Category distribution (for donut chart)
     category_data = []
-    colors = ["#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1", "#20c997"]
+    color_palette = ["#0d6efd", "#198754", "#ffc107", "#dc3545", "#20c997", "#6f42c1"]
 
-    for i, category in enumerate(Category.objects.all()):
-        cat_items = items.filter(category=category)
-        current = cat_items.aggregate(Sum('quantity'))['quantity__sum'] or 0
-        max_level = cat_items.aggregate(Sum('maximum_level'))['maximum_level__sum'] or 0
-        percentage = round((current / max_level) * 100, 2) if max_level else 0
-
-        category_data.append({
-            "name": category.name,
-            "percentage": percentage,
-            "current": current,
-            "max": max_level,
-            "color": colors[i % len(colors)]
-        })
+    for category in Category.objects.all():
+        total_in_cat = InventoryItem.objects.filter(category=category).aggregate(total=Sum('quantity'))['total'] or 0
+        percentage = round((total_in_cat / total_quantity) * 100, 2) if total_quantity > 0 else 0
+        color = color_palette[category.id % len(color_palette)]
+        category_data.append({"name": category.name, "percentage": percentage, "color": color})
 
     context = {
         "total_items": total_items,
+        "low_stock_items": low_stock_items,
+        "out_of_stock_items": out_of_stock_items,
+        "category_count": category_count,
+        "storage_used_percentage": round(storage_used_percentage, 2),
         "total_quantity": total_quantity,
         "max_capacity": max_capacity,
-        "storage_used_percentage": storage_used_percentage,
-        "low_stock_count": low_stock_count,
-        "out_of_stock_count": out_of_stock_count,
-        "supplier_count": supplier_count,
         "category_data": category_data,
     }
-
     return render(request, "systemuser/index.html", context)
-
