@@ -1,8 +1,20 @@
 from django import forms
 from .models import SystemUser, InventoryItem, Category
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 
 class SystemUserForm(forms.ModelForm):
+    current_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter current password'}),
+        label="Current Password",
+        required=True
+    )
+    new_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter new password (leave blank to keep current)'}),
+        label="New Password",
+        required=False
+    )
+
     class Meta:
         model = SystemUser
         fields = [
@@ -11,19 +23,44 @@ class SystemUserForm(forms.ModelForm):
             'email',
             'contact_number',
             'username',
-            'password',
-            'user_image',       
+            'user_image',  # Notice: removed 'password' here
         ]
-        widgets = {
-            'password': forms.PasswordInput(),
-        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.password = make_password(self.cleaned_data['password'])
+        # Only hash if the password is being changed or newly set
+        raw_password = self.cleaned_data.get('password')
+        if raw_password and not user.pk:  # Only hash for new users
+            user.password = make_password(raw_password)
+        elif raw_password and user.pk:  # Updating existing user
+            # If password field changed, re-hash it
+            from django.contrib.auth.hashers import identify_hasher
+            try:
+                identify_hasher(raw_password)
+            except Exception:
+                user.password = make_password(raw_password)
         if commit:
             user.save()
         return user
+
+
+    
+class AdminProfileForm(forms.ModelForm):
+    current_password = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter current password'}),
+        label="Current Password"
+    )
+    new_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter new password (optional)'}),
+        label="New Password (leave blank to keep current)"
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'username']
+
     
 
 class InventoryItemForm(forms.ModelForm):

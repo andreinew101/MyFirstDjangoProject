@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm
+from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -134,7 +134,59 @@ def add_category(request):
         form = CategoryForm()
     return render(request, 'systemuser/add_category.html', {'form': form})
 
-#=================================================================================
+@combined_login_required
+def edit_profile(request):
+    # Determine if the user is a Django admin or a SystemUser
+    if request.user.is_authenticated:
+        is_admin = True
+        user_obj = request.user
+        FormClass = AdminProfileForm
+    else:
+        is_admin = False
+        system_user_id = request.session.get('system_user_id')
+        user_obj = get_object_or_404(SystemUser, id=system_user_id)
+        FormClass = SystemUserForm
+
+    if request.method == 'POST':
+        form = FormClass(request.POST, request.FILES, instance=user_obj)
+        current_password = request.POST.get('current_password')
+
+        # Verify password correctness
+        if is_admin:
+            password_correct = user_obj.check_password(current_password)
+        else:
+            password_correct = (user_obj.password == current_password)
+
+        if not password_correct:
+            messages.error(request, "❌ Incorrect current password. Please try again.")
+        elif form.is_valid():
+            updated_user = form.save(commit=False)
+
+            # Handle password change
+            new_password = form.cleaned_data.get('new_password')
+            if new_password:
+                if is_admin:
+                    user_obj.set_password(new_password)
+                    update_session_auth_hash(request, user_obj)  # Keeps admin logged in
+                else:
+                    user_obj.password = new_password  # plaintext for now
+
+            updated_user.save()
+            messages.success(request, "✅ Profile updated successfully!")
+            return redirect('edit_profile')
+        else:
+            messages.error(request, "⚠️ Please correct the errors below.")
+    else:
+        form = FormClass(instance=user_obj)
+
+    context = {
+        'form': form,
+        'is_admin': is_admin,
+        'user_obj': user_obj,
+    }
+    return render(request, 'systemuser/edit_profile.html', context)
+
+#=====================Login and others:=======================================
 
 @combined_login_required
 def delete_item(request, pk):
