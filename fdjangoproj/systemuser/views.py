@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm, CategoryForm
+from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -163,13 +163,22 @@ def index(request):
 
     # Category distribution (for donut chart)
     category_data = []
-    color_palette = ["#0d6efd", "#198754", "#ffc107", "#dc3545", "#20c997", "#6f42c1"]
+    categories = Category.objects.all()
+    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
 
-    for category in Category.objects.all():
+    # Generate evenly spaced distinct hues (based on number of categories)
+    for i, category in enumerate(categories):
         total_in_cat = InventoryItem.objects.filter(category=category).aggregate(total=Sum('quantity'))['total'] or 0
         percentage = round((total_in_cat / total_quantity) * 100, 2) if total_quantity > 0 else 0
-        color = color_palette[category.id % len(color_palette)]
-        category_data.append({"name": category.name, "percentage": percentage, "color": color})
+        
+        hue = int((i * 360) / max(len(categories), 1))  # Spread colors across the hue wheel
+        color = f"hsl({hue}, 70%, 50%)"
+        
+        category_data.append({
+            "name": category.name,
+            "percentage": percentage,
+            "color": color
+        })
 
     context = {
         "total_items": total_items,
@@ -182,3 +191,35 @@ def index(request):
         "category_data": category_data,
     }
     return render(request, "systemuser/index.html", context)
+
+@combined_login_required
+def inventory_report(request):
+    from django.db.models import Sum
+
+    form = InventoryReportForm(request.GET or None)
+    items = InventoryItem.objects.all().order_by('-date_added')
+
+    # Apply filters
+    if form.is_valid():
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+        category = form.cleaned_data.get('category')
+
+        if start_date:
+            items = items.filter(date_added__gte=start_date)
+        if end_date:
+            items = items.filter(date_added__lte=end_date)
+        if category:
+            items = items.filter(category=category)
+
+    # Totals
+    total_value = sum(item.quantity * item.price for item in items)
+    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+
+    context = {
+        'form': form,
+        'items': items,
+        'total_value': total_value,
+        'total_quantity': total_quantity,
+    }
+    return render(request, 'systemuser/inventory_report.html', context)
