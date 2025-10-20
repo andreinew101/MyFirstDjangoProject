@@ -1,7 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-#from django.contrib.auth.hashers import check_password
+from django.http import HttpResponse
+from django.utils import timezone
+import openpyxl
+from openpyxl.styles import Font, Alignment
+from io import BytesIO
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
 from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm, UpdateStockForm
@@ -344,6 +349,80 @@ def inventory_report(request):
         'total_quantity': total_quantity,
     }
     return render(request, 'systemuser/inventory_report.html', context)
+
+@combined_login_required
+def export_inventory_report(request):
+    # Get filtered items (same logic as inventory_report)
+    form = InventoryReportForm(request.GET or None)
+    items = InventoryItem.objects.all().order_by('-date_added')
+
+    if form.is_valid():
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+        category = form.cleaned_data.get('category')
+
+        if start_date:
+            items = items.filter(date_added__gte=start_date)
+        if end_date:
+            items = items.filter(date_added__lte=end_date)
+        if category:
+            items = items.filter(category=category)
+
+    # Create Excel workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventory Report"
+
+    # Header styles
+    header_font = Font(bold=True, size=12)
+    center_align = Alignment(horizontal='center')
+
+    # Headers
+    headers = ['ID', 'Item Name', 'Category', 'Quantity', 'Price', 'Total Value', 'Date Added']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.alignment = center_align
+
+    # Data rows
+    for row_num, item in enumerate(items, 2):
+        ws.cell(row=row_num, column=1, value=item.item_id)
+        ws.cell(row=row_num, column=2, value=item.item_name)
+        ws.cell(row=row_num, column=3, value=item.category.name)
+        ws.cell(row=row_num, column=4, value=item.quantity)
+        ws.cell(row=row_num, column=5, value=float(item.price))
+        ws.cell(row=row_num, column=6, value=float(item.quantity * item.price))
+        ws.cell(row=row_num, column=7, value=item.date_added.strftime('%Y-%m-%d'))
+
+    # Auto-adjust column widths
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+
+    # Generate filename with date-time
+    now = datetime.now()
+    filename = f"Inventory Report {now.strftime('%Y-%m-%d %H-%M-%S')}.xlsx"
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Return as HTTP response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 # 🔹 Update Stock View
 @combined_login_required

@@ -48,6 +48,13 @@
                     </div>
                 </div>
 
+                <!-- Export Button -->
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{% url 'export_inventory_report' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                        <i class="fa-solid fa-file-excel me-2"></i> Export to Excel
+                    </a>
+                </div>
+
                 <!-- 📋 Table -->
                 <div class="card shadow-sm">
                     <div class="card-body">
