@@ -5,6 +5,12 @@ from django.contrib.auth.models import User
 
 # -------------------- Add User Form --------------------
 class SystemUserAddForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter password'}),
+        label="Password",
+        required=True
+    )
+
     class Meta:
         model = SystemUser
         fields = [
@@ -14,20 +20,14 @@ class SystemUserAddForm(forms.ModelForm):
             'contact_number',
             'username',
             'user_image',
+            'password',
         ]
-        widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'contact_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # Set default password or leave blank
-        if not user.pk:
-            user.password = make_password('defaultpassword123')  # or leave empty
+        raw_password = self.cleaned_data.get('password')
+        if raw_password:
+            user.password = raw_password  # or hash it if you want
         if commit:
             user.save()
         return user
@@ -81,7 +81,7 @@ class AdminProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'username']
-        
+
 
 class InventoryItemForm(forms.ModelForm):
     class Meta:

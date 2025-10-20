@@ -97,14 +97,11 @@ def adduser(request):
         form = SystemUserAddForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, "✅ New user added successfully!")
+            messages.success(request, "✅ User created successfully!")
             return redirect('userlist')
-        else:
-            messages.error(request, "⚠️ Please correct the errors below.")
     else:
         form = SystemUserAddForm()
     return render(request, 'systemuser/adduser.html', {'form': form})
-
 
 #============================= INVENTORY ITEMS ==========================
 
