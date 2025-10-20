@@ -104,6 +104,17 @@ def adduser(request):
     return render(request, 'systemuser/adduser.html', {'form': form})
 
 
+# 🔹 DELETE USER (requires admin/manager)
+@admin_manager_required
+def delete_user(request, pk):
+    user = get_object_or_404(SystemUser, id=pk)
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'User deleted successfully!')
+        return redirect('userlist')
+    return render(request, 'systemuser/confirm_delete_user.html', {'user': user})
+
+
 #============================= INVENTORY ITEMS ==========================
 
 # 🔹 Inventory List View
