@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-#from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
 from .forms import (
@@ -13,7 +12,7 @@ from .forms import (
     InventoryReportForm,
     ReportFilterForm
 )
-from .decorators import systemuser_login_required
+from .decorators import systemuser_login_required, admin_or_manager_required
 
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -80,18 +79,60 @@ def combined_login_required(view_func):
 
 
 # 🔹 DASHBOARD (requires login)
-
-
-# 🔹 USER LIST (requires login)
 @combined_login_required
+def index(request):
+    total_items = InventoryItem.objects.count()
+    low_stock_items = InventoryItem.objects.filter(quantity__lte=F('reorder_level')).count()
+    out_of_stock_items = InventoryItem.objects.filter(quantity=0).count()
+    category_count = Category.objects.count()
+
+    # Calculate total quantity and storage usage
+    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
+    max_capacity = InventoryItem.objects.aggregate(total=Sum('maximum_level'))['total'] or 0
+    storage_used_percentage = (total_quantity / max_capacity) * 100 if max_capacity > 0 else 0
+
+    # Category distribution (for donut chart)
+    category_data = []
+    categories = Category.objects.all()
+    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
+
+    # Generate evenly spaced distinct hues (based on number of categories)
+    for i, category in enumerate(categories):
+        total_in_cat = InventoryItem.objects.filter(category=category).aggregate(total=Sum('quantity'))['total'] or 0
+        percentage = round((total_in_cat / total_quantity) * 100, 2) if total_quantity > 0 else 0
+        
+        hue = int((i * 360) / max(len(categories), 1))  # Spread colors across the hue wheel
+        color = f"hsl({hue}, 70%, 50%)"
+        
+        category_data.append({
+            "name": category.name,
+            "percentage": percentage,
+            "color": color
+        })
+
+    context = {
+        "total_items": total_items,
+        "low_stock_items": low_stock_items,
+        "out_of_stock_items": out_of_stock_items,
+        "category_count": category_count,
+        "storage_used_percentage": round(storage_used_percentage, 2),
+        "total_quantity": total_quantity,
+        "max_capacity": max_capacity,
+        "category_data": category_data,
+    }
+    return render(request, "systemuser/index.html", context)
+
+
+# 🔹 USER LIST (requires login and Admin/Manager position)
+@admin_or_manager_required
 def userlist(request):
     user_list = SystemUser.objects.all()
     context = {'user_list': user_list}
     return render(request, 'systemuser/userlist.html', context)
 
 
-# 🔹 ADD USER (requires login)
-@combined_login_required
+# 🔹 ADD USER (requires login and Admin/Manager position)
+@admin_or_manager_required
 def adduser(request):
     if request.method == "POST":
         form = SystemUserAddForm(request.POST, request.FILES)
@@ -102,6 +143,7 @@ def adduser(request):
     else:
         form = SystemUserAddForm()
     return render(request, 'systemuser/adduser.html', {'form': form})
+
 
 #============================= INVENTORY ITEMS ==========================
 
@@ -212,53 +254,6 @@ def delete_item(request, pk):
         return redirect('item_list')
     return render(request, 'systemuser/confirm_delete.html', {'item': item})
 
-from django.db.models import Sum
-from .models import InventoryItem  # make sure this import exists
-
-@combined_login_required
-
-def index(request):
-    total_items = InventoryItem.objects.count()
-    low_stock_items = InventoryItem.objects.filter(quantity__lte=F('reorder_level')).count()
-    out_of_stock_items = InventoryItem.objects.filter(quantity=0).count()
-    category_count = Category.objects.count()
-
-    # Calculate total quantity and storage usage
-    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
-    max_capacity = InventoryItem.objects.aggregate(total=Sum('maximum_level'))['total'] or 0
-    storage_used_percentage = (total_quantity / max_capacity) * 100 if max_capacity > 0 else 0
-
-    # Category distribution (for donut chart)
-    category_data = []
-    categories = Category.objects.all()
-    total_quantity = InventoryItem.objects.aggregate(total=Sum('quantity'))['total'] or 0
-
-    # Generate evenly spaced distinct hues (based on number of categories)
-    for i, category in enumerate(categories):
-        total_in_cat = InventoryItem.objects.filter(category=category).aggregate(total=Sum('quantity'))['total'] or 0
-        percentage = round((total_in_cat / total_quantity) * 100, 2) if total_quantity > 0 else 0
-        
-        hue = int((i * 360) / max(len(categories), 1))  # Spread colors across the hue wheel
-        color = f"hsl({hue}, 70%, 50%)"
-        
-        category_data.append({
-            "name": category.name,
-            "percentage": percentage,
-            "color": color
-        })
-
-    context = {
-        "total_items": total_items,
-        "low_stock_items": low_stock_items,
-        "out_of_stock_items": out_of_stock_items,
-        "category_count": category_count,
-        "storage_used_percentage": round(storage_used_percentage, 2),
-        "total_quantity": total_quantity,
-        "max_capacity": max_capacity,
-        "category_data": category_data,
-    }
-    return render(request, "systemuser/index.html", context)
-
 @combined_login_required
 def inventory_report(request):
     form = ReportFilterForm(request.GET or None)
@@ -313,4 +308,3 @@ def inventory_report(request):
         'total_quantity': sum(item.quantity for item in items),
         'total_value': sum(item.quantity * item.price for item in items),
     })
-

@@ -9,6 +9,7 @@
                 </a>
 
                 <div class="sb-sidenav-menu-heading">Main</div>
+                {% if user_position == "Admin" or user_position == "Manager" %}
                 <a class="nav-link" href="{% url 'adduser' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
                     Add User
@@ -17,6 +18,7 @@
                     <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
                     User List
                 </a>
+                {% endif %}
                 <a class="nav-link" href="{% url 'item_list' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
                     Item List
