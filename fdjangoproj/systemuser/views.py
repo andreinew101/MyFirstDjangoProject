@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm
+from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm, UpdateStockForm
 from .decorators import systemuser_login_required, admin_manager_required
 
 from django.contrib.auth.models import User
@@ -291,3 +291,23 @@ def inventory_report(request):
         'total_quantity': total_quantity,
     }
     return render(request, 'systemuser/inventory_report.html', context)
+
+# 🔹 Update Stock View
+@combined_login_required
+def update_stock(request, pk):
+    item = get_object_or_404(InventoryItem, item_id=pk)
+    if request.method == 'POST':
+        form = UpdateStockForm(request.POST)
+        if form.is_valid():
+            quantity_change = form.cleaned_data['quantity_change']
+            new_quantity = item.quantity + quantity_change
+            if new_quantity < 0:
+                messages.error(request, 'Cannot reduce stock below zero.')
+            else:
+                item.quantity = new_quantity
+                item.save()
+                messages.success(request, f'Stock updated successfully! New quantity: {item.quantity}')
+                return redirect('item_list')
+    else:
+        form = UpdateStockForm()
+    return render(request, 'systemuser/update_stock.html', {'form': form, 'item': item})

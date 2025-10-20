@@ -92,6 +92,13 @@ class ItemForm(forms.ModelForm):
         model = InventoryItem
         fields = '__all__'  # Include all fields in the model
 
+class UpdateStockForm(forms.Form):
+    quantity_change = forms.IntegerField(
+        label="Quantity Change",
+        help_text="Enter positive number to add stock, negative to subtract.",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 10 or -5'})
+    )
+
 class InventoryReportForm(forms.Form):
     start_date = forms.DateField(
         required=False,

@@ -36,7 +36,8 @@ urlpatterns = [
 
     path('inventory/report/', views.inventory_report, name='inventory_report'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
-    
+    path('inventory/update_stock/<int:pk>/', views.update_stock, name='update_stock'),
+
 ]
 
 

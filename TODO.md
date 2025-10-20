@@ -1,15 +1,8 @@
-# TODO: Restrict Access to "Add user" and "user list" pages
+# TODO: Add Update Stock Feature
 
-## Completed Tasks
-- [x] Add position field to SystemUser model with choices: Admin, Manager, Employee
-- [x] Create @admin_manager_required decorator for access control
-- [x] Apply decorator to userlist and adduser views
-- [x] Update SystemUserForm to include position field
-- [x] Restrict position choices in adduser view: only Admins can set Admin position
-- [x] Update admin.py to include position in list_display, list_filter, and fields
-- [x] Create context processor to check user position
-- [x] Add context processor to settings
-- [x] Hide "Add User" and "User List" links from sidebar for non-admin/manager users
-
-## Remaining Tasks
-- [ ] Test the sidebar visibility changes
+- [x] Create UpdateStockForm in forms.py with quantity_change field (IntegerField, allows negative values).
+- [x] Create update_stock view in views.py: GET shows form with current quantity displayed, POST validates change, updates quantity (ensuring >=0), saves, redirects to item_list.
+- [x] Add URL pattern in urls.py for update_stock/<int:pk>/.
+- [x] Create update_stock.html template: form with current quantity display, input for quantity change, submit button.
+- [x] Modify item_list.html: add "Update Stock" button in Actions column, linking to update_stock URL.
+- [ ] Test the feature: run server, update stock, ensure no negative quantities, messages shown.
