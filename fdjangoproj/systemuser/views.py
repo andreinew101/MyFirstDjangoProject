@@ -71,7 +71,18 @@ def combined_login_required(view_func):
 @admin_manager_required
 def userlist(request):
     user_list = SystemUser.objects.all()
-    context = {'user_list': user_list}
+
+    # Determine current user's position
+    if request.user.is_authenticated:
+        current_user_position = 'Admin'  # Django users are considered Admins
+    else:
+        try:
+            current_user = SystemUser.objects.get(id=request.session['system_user_id'])
+            current_user_position = current_user.position
+        except SystemUser.DoesNotExist:
+            current_user_position = None
+
+    context = {'user_list': user_list, 'current_user_position': current_user_position}
     return render(request, 'systemuser/userlist.html', context)
 
 
@@ -102,6 +113,37 @@ def adduser(request):
     # Django users can choose all positions
 
     return render(request, 'systemuser/adduser.html', {'form': form})
+
+
+# 🔹 EDIT USER (requires admin/manager)
+@admin_manager_required
+def edit_user(request, pk):
+    user = get_object_or_404(SystemUser, id=pk)
+    if request.method == 'POST':
+        form = SystemUserForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'User updated successfully!')
+            return redirect('userlist')
+    else:
+        form = SystemUserForm(instance=user)
+
+    # Restrict position choices: only Admins can set Admin position
+    if not request.user.is_authenticated:
+        # SystemUser - check if Admin
+        try:
+            current_user = SystemUser.objects.get(id=request.session['system_user_id'])
+            if current_user.position != 'Admin':
+                # Remove Admin choice
+                form.fields['position'].choices = [
+                    choice for choice in form.fields['position'].choices
+                    if choice[0] != 'Admin'
+                ]
+        except SystemUser.DoesNotExist:
+            pass
+    # Django users can choose all positions
+
+    return render(request, 'systemuser/edit_user.html', {'form': form, 'user': user})
 
 
 # 🔹 DELETE USER (requires admin/manager)

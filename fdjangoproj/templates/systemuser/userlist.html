@@ -29,6 +29,7 @@
                                             <th>First Name</th>
                                             <th>Last Name</th>
                                             <th>Email</th>
+                                            <th>Position</th>
                                             <th>Image</th>
                                             <th>Actions</th>
                                         </tr>
@@ -38,6 +39,7 @@
                                             <th>First Name</th>
                                             <th>Last Name</th>
                                             <th>Email</th>
+                                            <th>Position</th>
                                             <th>Image</th>
                                             <th>Actions</th>
                                         </tr>
@@ -48,8 +50,14 @@
                                             <td>{{ user.first_name }}</td>
                                             <td>{{ user.last_name}}</td>
                                             <td>{{ user.email }}</td>
+                                            <td>{{ user.position }}</td>
                                             <td><img src="media/{{ user.user_image }}" alt="userimage" width="50" class="rounded-circle"></td>
-                                            <td><a href="{% url 'delete_user' user.id %}" class="btn btn-danger btn-sm">Delete</a></td>
+                                            <td>
+                                                {% if current_user_position == 'Admin' %}
+                                                <a href="{% url 'edit_user' user.id %}" class="btn btn-primary btn-sm">Edit</a>
+                                                {% endif %}
+                                                <a href="{% url 'delete_user' user.id %}" class="btn btn-danger btn-sm">Delete</a>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>

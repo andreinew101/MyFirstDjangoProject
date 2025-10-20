@@ -1,6 +1,9 @@
-# TODO: Add Delete Button to User List
+# TODO: Modify User List Table for Position and Edit Button
 
-- [ ] Create `confirm_delete_user.html` template based on `confirm_delete.html`, adapted for users
-- [ ] Add `delete_user` view in `views.py` with `@admin_manager_required` decorator
-- [ ] Add URL `path('users/delete/<int:pk>/', views.delete_user, name='delete_user')` in `urls.py`
-- [ ] Edit `userlist.html`: Fix header to "Email", add "Actions" column, change `<th>` to `<td>` in tbody, add delete button
+## Completed Tasks
+- [x] Update userlist.html to add Position column and conditional Edit button.
+- [x] Modify userlist view to include current_user_position in context.
+- [x] Create edit_user view in views.py.
+- [x] Add URL for edit_user in urls.py.
+- [x] Create edit_user.html template.
+- [ ] Test the changes to ensure only Admins see the Edit button and it works correctly.
