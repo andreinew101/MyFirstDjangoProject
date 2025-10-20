@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm
+from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm, ReportFilterForm
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -13,6 +13,13 @@ from django.contrib.auth import logout
 from django.db import models
 from django.db.models import Sum, Count, F
 
+import openpyxl
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+
+import pandas as pd
+from datetime import datetime
+from django.utils.timezone import localtime
 
 
 # 🔹 LOGIN VIEW
@@ -246,10 +253,8 @@ def index(request):
 
 @combined_login_required
 def inventory_report(request):
-    from django.db.models import Sum
-
-    form = InventoryReportForm(request.GET or None)
-    items = InventoryItem.objects.all().order_by('-date_added')
+    form = ReportFilterForm(request.GET or None)
+    items = InventoryItem.objects.all()
 
     # Apply filters
     if form.is_valid():
@@ -264,14 +269,40 @@ def inventory_report(request):
         if category:
             items = items.filter(category=category)
 
-    # Totals
-    total_value = sum(item.quantity * item.price for item in items)
-    total_quantity = items.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    # ✅ Export to Excel
+    if 'export' in request.GET and request.GET['export'] == 'excel':
+        data = []
+        for item in items:
+            data.append({
+                'Item ID': item.item_id,
+                'Item Name': item.item_name,
+                'Category': item.category.name,
+                'Quantity': item.quantity,
+                'Price': item.price,
+                'Total Value': item.quantity * item.price,
+                # Convert datetime to naive (Excel-friendly)
+                'Date Added': localtime(item.date_added).replace(tzinfo=None),
+            })
 
-    context = {
+        df = pd.DataFrame(data)
+
+        # Naming convention: Inventory Report (YYYY-MM-DD HH-MM).xlsx
+        now = datetime.now().strftime("%Y-%m-%d %I-%M %p")
+        filename = f"Inventory Report ({now}).xlsx"
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        # Write Excel directly to response
+        df.to_excel(response, index=False)
+        return response
+
+    return render(request, 'systemuser/inventory_report.html', {
         'form': form,
         'items': items,
-        'total_value': total_value,
-        'total_quantity': total_quantity,
-    }
-    return render(request, 'systemuser/inventory_report.html', context)
+        'total_quantity': sum(item.quantity for item in items),
+        'total_value': sum(item.quantity * item.price for item in items),
+    })
+
