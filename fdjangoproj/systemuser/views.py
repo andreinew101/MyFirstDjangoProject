@@ -4,7 +4,15 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 #from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import SystemUser, InventoryItem, Category, InventoryItem
-from .forms import SystemUserForm, InventoryItemForm, CategoryForm, InventoryReportForm, AdminProfileForm, ReportFilterForm
+from .forms import (
+    SystemUserAddForm,
+    SystemUserForm,
+    AdminProfileForm,
+    InventoryItemForm,
+    CategoryForm,
+    InventoryReportForm,
+    ReportFilterForm
+)
 from .decorators import systemuser_login_required
 
 from django.contrib.auth.models import User
@@ -86,12 +94,15 @@ def userlist(request):
 @combined_login_required
 def adduser(request):
     if request.method == "POST":
-        form = SystemUserForm(request.POST, request.FILES)
+        form = SystemUserAddForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, "✅ New user added successfully!")
             return redirect('userlist')
+        else:
+            messages.error(request, "⚠️ Please correct the errors below.")
     else:
-        form = SystemUserForm()
+        form = SystemUserAddForm()
     return render(request, 'systemuser/adduser.html', {'form': form})
 
 
