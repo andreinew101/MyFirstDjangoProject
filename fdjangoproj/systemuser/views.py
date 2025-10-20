@@ -255,6 +255,26 @@ def delete_item(request, pk):
     return render(request, 'systemuser/confirm_delete.html', {'item': item})
 
 @combined_login_required
+def update_stock(request, pk):
+    item = get_object_or_404(InventoryItem, item_id=pk)
+    if request.method == 'POST':
+        action = request.POST.get('action')  # 'add' or 'deduct'
+        amount = int(request.POST.get('amount', 0))
+        if action == 'add':
+            item.quantity += amount
+            messages.success(request, f"Added {amount} to {item.item_name}. New quantity: {item.quantity}")
+        elif action == 'deduct':
+            if item.quantity >= amount:
+                item.quantity -= amount
+                messages.success(request, f"Deducted {amount} from {item.item_name}. New quantity: {item.quantity}")
+            else:
+                messages.error(request, f"Cannot deduct {amount} from {item.item_name}. Current quantity: {item.quantity}")
+                return redirect('update_stock', pk=pk)
+        item.save()
+        return redirect('item_list')
+    return render(request, 'systemuser/update_stock.html', {'item': item})
+
+@combined_login_required
 def inventory_report(request):
     form = ReportFilterForm(request.GET or None)
     items = InventoryItem.objects.all()
