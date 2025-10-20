@@ -29,11 +29,12 @@ class SystemUserAdmin(admin.ModelAdmin):
         'email',
         'contact_number',
         'username',
+        'position',
         'created_at',
         'display_image',
     )
     search_fields = ('first_name', 'last_name', 'email', 'username')
-    list_filter = ('created_at',)
+    list_filter = ('created_at', 'position')
     ordering = ('-created_at',)
     fields = (
         'first_name',
@@ -42,6 +43,7 @@ class SystemUserAdmin(admin.ModelAdmin):
         'contact_number',
         'username',
         'password',
+        'position',
         'user_image',
     )
 

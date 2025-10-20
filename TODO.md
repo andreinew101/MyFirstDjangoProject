@@ -1,11 +1,15 @@
-# TODO: Add "Update Stocks" Feature
+# TODO: Restrict Access to "Add user" and "user list" pages
 
-## Steps to Complete
+## Completed Tasks
+- [x] Add position field to SystemUser model with choices: Admin, Manager, Employee
+- [x] Create @admin_manager_required decorator for access control
+- [x] Apply decorator to userlist and adduser views
+- [x] Update SystemUserForm to include position field
+- [x] Restrict position choices in adduser view: only Admins can set Admin position
+- [x] Update admin.py to include position in list_display, list_filter, and fields
+- [x] Create context processor to check user position
+- [x] Add context processor to settings
+- [x] Hide "Add User" and "User List" links from sidebar for non-admin/manager users
 
-- [x] Add `update_stock` view in `fdjangoproj/systemuser/views.py` to handle adding/deducting quantity for an item, with validation to prevent negative quantity.
-- [x] Add URL pattern for `update_stock` in `fdjangoproj/systemuser/urls.py`.
-- [x] Modify `fdjangoproj/templates/systemuser/item_list.html` to include an "Update Stock" button for each item.
-- [x] Create new template `fdjangoproj/templates/systemuser/update_stock.html` for the update form (add/deduct amount).
-- [x] Add "Update Stocks" link to the sidebar in `fdjangoproj/templates/partials/sidebar.html`, pointing to the item_list view.
-- [ ] Test the feature by logging in as Admin, Manager, and Employee to ensure access and functionality.
-- [ ] Verify success/error messages are displayed correctly.
+## Remaining Tasks
+- [ ] Test the sidebar visibility changes

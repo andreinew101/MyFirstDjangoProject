@@ -9,7 +9,7 @@
                 </a>
 
                 <div class="sb-sidenav-menu-heading">Main</div>
-                {% if user_position == "Admin" or user_position == "Manager" %}
+                {% if is_admin_or_manager %}
                 <a class="nav-link" href="{% url 'adduser' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
                     Add User
@@ -21,7 +21,7 @@
                 {% endif %}
                 <a class="nav-link" href="{% url 'item_list' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
-                    Update Stocks
+                    Item List
                 </a>
                 <a class="nav-link" href="{% url 'add_category' %}">
                     <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
